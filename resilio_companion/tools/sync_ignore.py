@@ -4,6 +4,7 @@ import os
 import re
 import shutil
 from pathlib import Path
+from time import sleep
 
 from resilio_companion.api import ResilioAPI
 from resilio_companion.utils.ignore import compile_ruleset, rules_to_set
@@ -67,6 +68,9 @@ def update_ignore(p: Path, delete: bool = True, dry_run: bool = False) -> None:
         with open(global_ignore_path) as f:
             with open(local_ignore_path, "w") as g:
                 g.write(f.read())
+
+    logging.info("Waiting 10 seconds for Resilio to load the changes...")
+    sleep(10)
 
     if delete:
         pattern = compile_ruleset(global_rules)

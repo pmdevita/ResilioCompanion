@@ -3,3 +3,4 @@
 tests
 .pre-commit-config.yaml
 Dockerfile
+__pycache__

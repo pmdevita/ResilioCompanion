@@ -28,5 +28,7 @@ RUN poetry install -n --no-ansi
 
 COPY . .
 
+RUN poetry install -n --no-ansi
+
 ENTRYPOINT ["poetry", "run", "rscompanion"]
 CMD ["ignore", "--dry-run", "--delete"]
