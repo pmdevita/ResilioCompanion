@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "resilio-companion"
+version = "0.1.0"
+description = ""
+authors = ["Peter DeVita <mewtwo2643@yahoo.com>"]
+readme = "README.md"
+packages = [{include = "resilio_companion"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+requests = "^2.32.3"
+beautifulsoup4 = "^4.12.3"
+pytest = "^8.3.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.poetry.scripts]
+rscompanion = "resilio_companion.tools:main"
