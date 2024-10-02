@@ -10,6 +10,7 @@ IGNORE_RULES = [
     "?recycle",
     "a/**/b",
     "b*a/**/b",
+    ".git",
 ]
 PATHS = [
     "/ABC",
@@ -23,8 +24,30 @@ PATHS = [
     "/a/x/y/b",
     "/alpha/x/y/b",
     "/beta/x/y/b",
+    "/dosync/.sync/abcd.txt",
+    "/.sync/abcd.txt",
+    "/.sync/asdf.pdf",
+    "/asdf/.github/asdf",
+    "/.github",
 ]
-MATCH_RESULTS = [False, True, False, False, False, True, True, True, True, False, True]
+MATCH_RESULTS = [
+    False,
+    True,
+    False,
+    False,
+    False,
+    True,
+    True,
+    True,
+    True,
+    False,
+    True,
+    True,
+    False,
+    False,
+    False,
+    False,
+]
 
 
 def test_rule_compiler():
@@ -35,6 +58,7 @@ def test_rule_compiler():
     assert rule_to_regex("ABC/CDE F") == "^/ABC/CDE F"
     assert rule_to_regex("FOO/*") == "^/FOO/[^/]*?"
     assert rule_to_regex("/FOO") == "^/FOO"
+    assert rule_to_regex("#aopsdjif") is None
 
 
 def test_ruleset_pattern():

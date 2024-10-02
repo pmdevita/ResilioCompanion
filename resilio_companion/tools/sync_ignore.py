@@ -1,13 +1,12 @@
 import argparse
 import logging
 import os
+import re
 import shutil
 from pathlib import Path
 
 from resilio_companion.api import ResilioAPI
 from resilio_companion.utils.ignore import compile_ruleset, rules_to_set
-
-logger = logging.Logger(__name__)
 
 
 def get_subparser(subparser: argparse.ArgumentParser):
@@ -29,11 +28,11 @@ def get_subparser(subparser: argparse.ArgumentParser):
 
 
 def main(args):
-    client = ResilioAPI.from_ini(args.config)
+    if args.config:
+        client = ResilioAPI.from_ini(args.config)
+    else:
+        client = ResilioAPI.from_env()
     folders = client.get_sync_folders()
-
-    print(folders[0])
-    print([f["path"] for f in folders])
 
     for f in folders:
         update_ignore(Path(f["path"]), delete=args.delete, dry_run=args.dry_run)
@@ -44,7 +43,7 @@ def update_ignore(p: Path, delete: bool = True, dry_run: bool = False) -> None:
     global_ignore_path = p / "resilio-ignore.txt"
 
     if not global_ignore_path.exists():
-        logger.info(f"Folder {p} does not have a resilio-ignore.txt file.")
+        logging.info(f"Folder {p} does not have a resilio-ignore.txt file.")
         return
 
     with open(local_ignore_path) as f:
@@ -63,20 +62,31 @@ def update_ignore(p: Path, delete: bool = True, dry_run: bool = False) -> None:
         return
 
     # Things have changed, override the local with the global set
-    logger.info(f"Ignore list changed at {p}, replacing in .sync folder.")
-    with open(global_ignore_path) as f:
-        with open(local_ignore_path, "w") as g:
-            g.write(f.read())
+    logging.info(f"Ignore list changed at {p}, replacing in .sync folder.")
+    if not dry_run:
+        with open(global_ignore_path) as f:
+            with open(local_ignore_path, "w") as g:
+                g.write(f.read())
 
     if delete:
         pattern = compile_ruleset(global_rules)
+        logging.debug(pattern.pattern)
+        for path in p.glob("**/*"):
+            delete_path(p, path, pattern, dry_run)
         for path in p.glob("**"):
-            path_str = "/" + str(path.as_posix())
-            if pattern.findall(path_str):
-                logger.info(f"Deleting {path}")
-                if dry_run:
-                    continue
-                if path.is_file():
-                    os.remove(path)
-                elif path.is_dir():
-                    shutil.rmtree(path)
+            delete_path(p, path, pattern, dry_run)
+
+
+def delete_path(parent: Path, path: Path, pattern: re.Pattern, dry_run: bool = False):
+    relative_path = path.relative_to(parent)
+    path_str = "/" + str(relative_path.as_posix())
+    if path_str.startswith("/.sync"):
+        return
+    if pattern.findall(path_str):
+        logging.info(f"Deleting {relative_path}")
+        if dry_run:
+            return
+        if path.is_file():
+            os.remove(path)
+        elif path.is_dir():
+            shutil.rmtree(path)

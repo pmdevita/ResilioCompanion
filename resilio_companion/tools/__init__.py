@@ -1,6 +1,10 @@
 import argparse
+import logging
+import os
 
 from .sync_ignore import get_subparser as sync_ignore_subparser
+
+logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO").upper())
 
 parser = argparse.ArgumentParser(
     description="Various tools to help run a Resilio Sync server"

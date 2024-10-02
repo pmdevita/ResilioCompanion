@@ -1,5 +1,6 @@
 import configparser
 import logging
+import os
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -30,6 +31,15 @@ class ResilioAPI:
             parser["general"]["port"],
             parser["general"]["username"],
             parser["general"]["password"],
+        )
+
+    @classmethod
+    def from_env(cls):
+        return cls(
+            os.environ["RESILIO_HOST"],
+            os.environ["RESILIO_PORT"],
+            os.environ["RESILIO_USER"],
+            os.environ["RESILIO_PASSWORD"],
         )
 
     def get(self, url, params=None):

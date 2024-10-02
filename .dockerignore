@@ -1,0 +1,5 @@
+.git
+.gitignore
+tests
+.pre-commit-config.yaml
+Dockerfile
